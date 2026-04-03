@@ -152,26 +152,37 @@ func (dm *DataMap) CopyPoint(refEndpoint *GoStruct.Reflect, endpoint GoStruct.En
 }
 
 func (dm *DataMap) CopyPointFromName(refEndpoint string, endpoint GoStruct.EndPointPath, pointId string, pointName string) *GoStruct.Reflect {
-	var Current *GoStruct.Reflect
-	for range Only.Once {
-		if ref, ok := dm.StructMap.Map[refEndpoint]; ok {
-			Current = dm.CopyPoint(ref, endpoint, pointId, pointName)
-			break
-		}
+    var Current *GoStruct.Reflect
+    for range Only.Once {
+        if ref, ok := dm.StructMap.Map[refEndpoint]; ok {
+            Current = dm.CopyPoint(ref, endpoint, pointId, pointName)
+            break
+        }
 
-		for key := range dm.StructMap.Map {
-			if strings.HasSuffix(dm.StructMap.Map[key].FieldPath.String(), refEndpoint) {
-				Current = dm.CopyPoint(dm.StructMap.Map[key], endpoint, pointId, pointName)
-				break
-			}
-			if strings.HasSuffix(key, refEndpoint) {
-				Current = dm.CopyPoint(dm.StructMap.Map[key], endpoint, pointId, pointName)
-				break
-			}
-		}
-	}
+        for key := range dm.StructMap.Map {
+            if strings.HasSuffix(dm.StructMap.Map[key].FieldPath.String(), refEndpoint) {
+                Current = dm.CopyPoint(dm.StructMap.Map[key], endpoint, pointId, pointName)
+                break
+            }
+            if strings.HasSuffix(key, refEndpoint) {
+                Current = dm.CopyPoint(dm.StructMap.Map[key], endpoint, pointId, pointName)
+                break
+            }
+        }
+    }
 
-	return Current
+    // FIX: Return a safe empty Reflect if point not found
+    if Current == nil {
+        Current = &GoStruct.Reflect{}
+        Current.DataStructure.PointId = pointId
+        Current.DataStructure.PointName = pointName
+        if !endpoint.IsZero() {
+            Current.DataStructure.Endpoint = endpoint
+            Current.DataStructure.Endpoint.Append(pointId)
+        }
+    }
+
+    return Current
 }
 
 func (dm *DataMap) GetReflect(refEndpoint string) *GoStruct.Reflect {
