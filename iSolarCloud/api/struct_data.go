@@ -205,6 +205,10 @@ func (dm *DataMap) GetReflect(refEndpoint string) *GoStruct.Reflect {
 		}
 	}
 
+	if Current == nil {
+		Current = &GoStruct.Reflect{}
+	}
+
 	return Current
 }
 
